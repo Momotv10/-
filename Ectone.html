@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>متجر الكتروني</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-messaging.js"></script>
+  
+  <style>
+    body {
+      margin: 0;
+      font-family: "Questrial", sans-serif;
+      color: #fff;
+      background-image: url('https://i.postimg.cc/GpQJkr7n/Picsart-23-08-06-20-46-52-526.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    .banner {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 50px auto;
+    }
+
+    .product-item {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .product-item img {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto 15px;
+      display: block;
+      border-radius: 10px;
+      transition: border 0.3s ease-in-out;
+    }
+
+    .product-item:hover img {
+      border: 10px solid #ccac00;
+    }
+
+    .product-name, .product-desc {
+      color: #fff;
+      margin: 10px 0;
+    }
+
+    .product-price {
+      color: #ccac00;
+      margin: 5px 0;
+    }
+
+    .add-to-cart-button {
+      text-decoration: none;
+      color: #fff;
+      padding: 10px 20px;
+      transition-duration: 0.3s;
+      background-color: #ccac00;
+      border-radius: 5px;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    .add-to-cart-button:hover {
+      background-color: #ffdb58;
+    }
+
+    .cart-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background-color: #ccac00;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      font-size: 24px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      z-index: 2;
+      transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+    .cart-icon:hover {
+      background-color: #ffdb58;
+      transform: scale(1.1);
+    }
+
+    .cart-badge {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background-color: #ffdb58;
+      color: #fff;
+      border-radius: 50%;
+      padding: 3px 6px;
+      font-size: 12px;
+    }
+
+    .cart-container {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 300px;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      box-shadow: -4px 0 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .cart-container.open {
+      transform: translateX(0);
+    }
+
+    .cart-container h2 {
+      margin-bottom: 20px;
+      color: #ccac00;
+    }
+
+    .cart-items {
+      overflow-y: auto;
+      max-height: calc(100% - 140px);
+    }
+
+    .cart-item {
+      margin-bottom: 20px;
+      border-bottom: solid 1px #ddd;
+      padding-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .cart-item img {
+      max-width: 60px;
+      max-height: 70px;
+      border-radius: 10px;
+      margin-right: 10px;
+    }
+
+    .cart-item-details {
+      flex-grow: 1;
+    }
+
+    .cart-item-name {
+      font-weight: bold;
+    }
+
+    .cart-item-price {
+      color: #ccac00;
+    }
+
+    .checkout-button {
+      display: block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #ccac00;
+      color: #fff;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .checkout-button:hover {
+      background-color: #ffdb58;
+    }
+
+    .checkout-form {
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .checkout-form h2 {
+      margin-bottom: 20px;
+      color: #ccac00;
+    }
+
+    .checkout-form label {
+      color: #fff;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .checkout-form input, .checkout-form textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .checkout-form .button {
+      width: auto;
+      margin-top: 10px;
+    }
+
+    .checkout-summary {
+      margin-top: 20px;
+      text-align: center;
+      color: #fff;
+      padding: 20px;
+      background-color: rgba(204, 172, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    .checkout-summary p {
+      margin-bottom: 10px;
+    }
+
+    .checkout-summary a {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #ccac00;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .checkout-summary a:hover {
+      background-color: #ffdb58;
+    }
+
+    .checkout-summary textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      resize: vertical;
+      font-family: inherit;
+    }
+      .notification-icon {
+          position: fixed;
+          bottom: 80px;
+          right: 20px;
+          width: 50px;
+          height: 50px;
+          background-color: #ccac00;
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: #fff;
+          font-size: 24px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          cursor: pointer;
+          z-index: 2;
+          transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+      }
+     
+      .notification-icon:hover {
+          background-color: #ffdb58;
+          transform: scale(1.1);
+      }
+     
+      .notification-badge {
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          background-color: #ffdb58;
+          color: #fff;
+          border-radius: 50%;
+          padding: 3px 6px;
+          font-size: 12px;
+      }
+     
+      .notifications-container {
+          position: fixed;
+          bottom: 0;
+          right: 0;
+          width: 300px;
+          height: 100%;
+          background-color: rgba(255, 255, 255);
+          box-shadow: -4px 0 6px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+          transform: translateX(100%);
+          transition: transform 0.3s ease-in-out;
+          overflow-y: auto;
+      }
+     
+      .notifications-container.open {
+          transform: translateX(0);
+      }
+     
+      .notification-item {
+          margin-bottom: 20px;
+          padding-bottom: 20px;
+          border-bottom: solid 1px #ddd;
+      }
+  </style>
+</head>
+<body>
+     
+     <div class="notification-icon">
+         <a href="#" id="notificationsLink">
+             <i class="fas fa-bell" style="color: white;"></i>
+             <span class="notification-badge" id="notificationCount">0</span>
+         </a>
+     </div>
+     
+     <div class="notifications-container" id="notificationsContainer">
+         <!-- سيتم إضافة الإشعارات هنا -->
+     </div>
+     
+    
+  <header>
+    <img src="https://i.postimg.cc/GtB82SNR/Picsart-23-08-06-20-19-54-331.jpg" alt="لوجو" class="banner">
+  </header>
+  <main>
+    <div class="product-grid">
+      
+    </div>
+  </main>
+  <div class="cart-icon" onclick="toggleCart()">
+    <i class="fas fa-shopping-cart"></i>
+    <span class="cart-badge" id="cartItemCount">0</span>
+  </div>
+  <div class="cart-container" id="cartContainer">
+    <h2>عربة التسوق</h2>
+    <div class="cart-items" id="cartItems">
+      <!-- العناصر ستتم إضافتها هنا -->
+    </div>
+    <div class="checkout-summary">
+      <p>الإجمالي: <span id="totalAmount">YER 0.00</span></p>
+      <p>تفاصيل العربة:</p>
+      <textarea id="cartSummaryTextarea" rows="4" readonly></textarea>
+      <a class="checkout-button" href="#" onclick="sendCartToWhatsApp()">اتمام الشراء</a>
+    </div>
+  </div>
+  <script>
+      const notificationsLink = document.getElementById('notificationsLink');
+      const notificationCount = document.getElementById('notificationCount');
+      const notificationsContainer = document.getElementById('notificationsContainer');
+  
+      let notifications = []; // قائمة الإشعارات
+  
+      function updateNotificationCount() {
+          notificationCount.innerText = notifications.length;
+      }
+  
+      function showNotifications() {
+          notificationsContainer.innerHTML = '';
+          notifications.forEach(notification => {
+              const notificationItem = document.createElement('div');
+              notificationItem.classList.add('notification-item');
+              notificationItem.innerText = notification.message;
+              notificationsContainer.appendChild(notificationItem);
+          });
+      }
+  
+      function addNotification(message) {
+          notifications.push({ message });
+          updateNotificationCount();
+          showNotifications();
+      }
+  
+      function toggleNotifications() {
+          notificationsContainer.classList.toggle('open');
+      }
+  
+      // تنفيذ إرسال الإشعار عند النقر على الزر
+      notificationsLink.addEventListener('click', () => {
+          toggleNotifications();
+      });
+      // تكوين Firebase
+      var firebaseConfig = {
+          apiKey: "AIzaSyD1nfvxtDIIt7gju_ahLhl-hiWGiMBrUHA",
+          authDomain: "momotv-92e41.firebaseapp.com",
+          databaseURL: "https://momotv-92e41-default-rtdb.firebaseio.com",
+          projectId: "momotv-92e41",
+          storageBucket: "momotv-92e41.appspot.com",
+          messagingSenderId: "970693359138",
+          appId: "1:970693359138:web:f5ef01d001b695b1283c7b",
+          measurementId: "G-DC2HD3YR57"
+      };
+      
+    // تهيئة Firebase
+    firebase.initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    // تكوين Firebase Cloud Messaging
+    const messaging = firebase.messaging();
+
+    // استدعاء دالة addNotification عند تلقي إشعار جديد
+    
+messaging.onMessage((payload) => {
+  console.log('Message received. ', payload);
+  // Update the notification count in the bell icon
+  const notificationCount = document.getElementById('notificationCount');
+  notificationCount.innerText = parseInt(notificationCount.innerText) + 1;
+});
+
+
+    // الحصول على رمز تسجيل الجهاز لإرسال الإشعارات إليه
+    messaging.getToken().then((token) => {
+      console.log("تم الحصول على رمز تسجيل الجهاز:", token);
+      // يمكنك هنا إرسال هذا الرمز إلى الخادم الخاص بك
+      // لاستخدامه لإرسال الإشعارات للجهاز المعني
+    }).catch((error) => {
+      console.log("فشل في الحصول على رمز تسجيل الجهاز:", error);
+    });
+  
+  
+  </script>
+ 
+  <script>
+  
+  
+  
+  
+  
+    const cart = [];
+    const cartBadge = document.getElementById('cartItemCount');
+    const cartContainer = document.getElementById('cartContainer');
+    const cartItems = document.getElementById('cartItems');
+    const cartSummaryTextarea = document.getElementById('cartSummaryTextarea');
+
+    function updateCartBadge() {
+      cartBadge.innerText = cart.length;
+    }
+
+    function updateCartItems() {
+      cartItems.innerHTML = '';
+      let totalAmount = 0; // إجمالي المبلغ
+      cart.forEach(item => {
+        const cartItem = document.createElement('div');
+        cartItem.classList.add('cart-item');
+        cartItem.innerHTML = `
+          <img src="${item.image}" alt="${item.productName}">
+          <div class="cart-item-details">
+            <h4 class="cart-item-name">${item.productName}</h4>
+            <p class="cart-item-price">YER ${item.price.toLocaleString('en-US', { minimumFractionDigits: 0, useGrouping: true })}</p>
+      </div>
+          </div>
+        `;
+        totalAmount += item.price; // زيادة إجمالي المبلغ بسعر المنتج
+        cartItems.appendChild(cartItem);
+      });
+
+      // تحديث إجمالي المبلغ على الصفحة
+      document.getElementById('totalAmount').innerText = `YER ${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+      // تحديث تفاصيل العربة
+      cartSummaryTextarea.value = cart.map(item => `${item.productName}: YER ${item.price.toFixed(2)}`).join('\n');
+    }
+
+    // إضافة العناصر إلى العربة
+    function addToCart(productName, price, image) {
+      const item = {
+        productName,
+        price,
+        image
+      };
+      cart.push(item);
+      updateCartBadge();
+      updateCartItems();
+    }
+
+    function toggleCart() {
+      cartContainer.classList.toggle('open');
+    }
+
+    // إرسال تفاصيل العربة إلى الواتساب
+    function sendCartToWhatsApp() {
+      const customerName = prompt('الرجاء إدخال اسم العميل:');
+      const customerAddress = prompt('الرجاء إدخال العنوان:');
+
+      if (cart.length === 0) {
+        alert('العربة فارغة. الرجاء اضافة منتجات للشراء.');
+        return;
+      }
+
+      if (!customerName || !customerAddress) {
+        alert('الرجاء ملء جميع التفاصيل قبل اتمام الشراء.');
+        return;
+      }
+
+      // إنشاء نص للإرسال على الواتساب
+      let message = `طلب شراء:\n`;
+      cart.forEach(item => {
+        message += `${item.productName}: YER ${item.price.toFixed(2)}\n`;
+      });
+      message += `\nالإجمالي: YER ${getTotalAmount().toFixed(2)}`;
+      message += `\nالعميل: ${customerName}`;
+      message += `\nالعنوان: ${customerAddress}`;
+
+      // فتح نافذة الواتساب لإرسال الرسالة
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappLink = `https://wa.me/+967737070012?text=${encodedMessage}`;
+        window.open(whatsappLink, '_blank');
+        }
+
+    // حساب إجمالي المبلغ
+    function getTotalAmount() {
+      return cart.reduce((total, item) => total + item.price, 0);
+    }
+
+    // إستدعاء المنتجات من ملف خارجي
+    fetch('Hhhhhhhh.json')
+      .then(response => response.json())
+      .then(products => {
+        products.forEach(product => {
+          const productItem = document.createElement('div');
+          productItem.classList.add('product-item');
+          productItem.innerHTML = `
+            <img src="${product.image}" alt="${product.productName}">
+            <h3 class="product-name">${product.productName}</h3>
+            <p class="product-desc">${product.description}</p>
+            <p class="product-price">YER ${product.price.toLocaleString('en-US', { minimumFractionDigits: 0, useGrouping: true })}</p>
+            <a class="add-to-cart-button" href="#" onclick="addToCart('${product.productName}', ${product.price}, '${product.image}')">اضف الى العربة</a>
+          `;
+          document.querySelector('.product-grid').appendChild(productItem);
+        });
+      });
+  </script>
+</body>
+</html>
