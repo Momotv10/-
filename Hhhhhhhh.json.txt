@@ -1,0 +1,27 @@
+
+[
+  {
+    "productName": "مجموعة جل الاظافر من mobray poly get ",
+    "description": "مع جهاز مجفف",
+    "price": 21000,
+    "image": "https://i.postimg.cc/QtngkDKH/7e291925-0527-4a7b-b733-62b2943813e4.jpg"
+  },
+  {
+    "productName": "ليزر إزاله الشعر من PHILIPS",
+    "description": "الإصدار 11",
+    "price":380000,
+    "image": "https://i.postimg.cc/65Pg1ggZ/5ec009d3-eb62-4c8f-bf55-4e427a078ae8.jpg"
+  },
+  {
+    "productName": "مبخرة إلكترونية",
+    "description": "وسماعة بلوتوث ٢ في ١",
+    "price": 25000,
+    "image": "https://i.postimg.cc/cHqXRNKx/73374a21-aac3-4429-8139-2f2ba46ec09e.jpg"
+  },
+  {
+      "productName": "مبخرة الشعر الجديدة كلياً",
+      "description": "ضمان 3 أشهر من أي خلل مصنعي",
+      "price": 12500,
+      "image": "https://i.postimg.cc/Fz4hrR5K/624156d3-6215-4bf8-b22e-2401a238ca62.jpg"
+  }
+]
